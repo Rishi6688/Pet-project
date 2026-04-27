@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --green:#1D9E75;--green-light:#E1F5EE;--green-mid:#9FE1CB;
+    --amber:#BA7517;--amber-light:#FAEEDA;
+    --coral:#D85A30;--coral-light:#FAECE7;
+    --teal:#0F6E56;--teal-light:#E1F5EE;
+    --text:#2C2C2A;--text-muted:#5F5E5A;--text-light:#888780;
+    --bg:#FAFAF8;--card:#fff;--border:#D3D1C7;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+  .hero{background:linear-gradient(135deg,#04342C 0%,#0F6E56 50%,#1D9E75 100%);padding:48px 32px 56px;position:relative;overflow:hidden}
+  .hero::before{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,0.04)}
+  .hero::after{content:'';position:absolute;bottom:-40px;left:20%;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.03)}
+  .hero-label{font-size:11px;letter-spacing:3px;color:#9FE1CB;text-transform:uppercase;margin-bottom:12px}
+  .hero-title{font-family:'Playfair Display',serif;font-size:38px;color:#fff;line-height:1.2;margin-bottom:8px}
+  .hero-sub{font-size:14px;color:#5DCAA5;font-weight:300;margin-bottom:32px}
+
+  .search-box{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:12px;cursor:text;backdrop-filter:blur(8px)}
+  .search-box input{background:none;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:15px;color:#fff;flex:1;width:100%}
+  .search-box input::placeholder{color:rgba(255,255,255,0.5)}
+  .search-icon{width:18px;height:18px;color:#9FE1CB;flex-shrink:0}
+
+  .quick-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+  .tag{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:6px 14px;font-size:12px;color:#E1F5EE;cursor:pointer;transition:all 0.2s}
+  .tag:hover,.tag.active{background:rgba(255,255,255,0.22);border-color:rgba(255,255,255,0.35)}
+
+  .section{padding:28px 20px}
+  .section-title{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px}
+  .section-sub{font-size:13px;color:var(--text-muted);margin-bottom:20px}
+
+  .result-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:16px;transition:transform 0.2s,box-shadow 0.2s}
+  .result-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.07)}
+
+  .card-header{padding:20px 20px 0;display:flex;align-items:flex-start;gap:14px}
+  .card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+  .card-icon.green{background:var(--green-light)}
+  .card-icon.amber{background:var(--amber-light)}
+  .card-icon.coral{background:var(--coral-light)}
+  .card-title{font-family:'Playfair Display',serif;font-size:17px;margin-bottom:2px}
+  .card-meta{font-size:12px;color:var(--text-muted)}
+
+  .card-body{padding:16px 20px 20px}
+  .card-desc{font-size:13px;color:var(--text-muted);line-height:1.6;margin-bottom:14px}
+
+  .pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .pill{background:var(--green-light);color:var(--teal);font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500}
+  .pill.amber{background:var(--amber-light);color:var(--amber)}
+  .pill.coral{background:var(--coral-light);color:var(--coral)}
+
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:none;border-radius:12px;padding:10px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.2s}
+  .btn-primary{background:var(--green);color:#fff}
+  .btn-primary:hover{background:var(--teal)}
+  .btn-ghost{background:var(--green-light);color:var(--teal);border:1px solid var(--green-mid)}
+  .btn-ghost:hover{background:var(--green-mid)}
+  .btn-amber{background:var(--amber-light);color:var(--amber);border:1px solid #FAC775}
+
+  .divider{height:1px;background:var(--border);margin:0 20px}
+
+  .symptom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+  .symptom-chip{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 12px;text-align:center;cursor:pointer;transition:all 0.2s}
+  .symptom-chip:hover,.symptom-chip.sel{border-color:var(--green);background:var(--green-light)}
+  .symptom-chip .icon{font-size:24px;margin-bottom:6px}
+  .symptom-chip .label{font-size:12px;font-weight:500;color:var(--text-muted)}
+  .symptom-chip.sel .label{color:var(--teal)}
+
+  .recipe-steps{counter-reset:steps}
+  .step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border)}
+  .step:last-child{border-bottom:none}
+  .step-num{width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .step-text{font-size:13px;color:var(--text-muted);line-height:1.6}
+  .step-active .step-num{background:var(--amber);animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+  .step-active .step-text{color:var(--text);font-weight:500}
+
+  .voice-bar{background:linear-gradient(135deg,#04342C,#1D9E75);border-radius:16px;padding:16px 18px;display:flex;align-items:center;gap:14px;margin-top:16px}
+  .voice-btn{width:44px;height:44px;border-radius:50%;background:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;transition:transform 0.2s}
+  .voice-btn:hover{transform:scale(1.08)}
+  .voice-info{flex:1}
+  .voice-title{font-size:13px;font-weight:500;color:#E1F5EE}
+  .voice-sub{font-size:11px;color:#5DCAA5}
+  .wave{display:flex;gap:3px;align-items:center}
+  .wave-bar{width:3px;background:#9FE1CB;border-radius:2px;animation:wave 1s ease-in-out infinite}
+  .wave-bar:nth-child(1){height:8px;animation-delay:0s}
+  .wave-bar:nth-child(2){height:16px;animation-delay:0.1s}
+  .wave-bar:nth-child(3){height:12px;animation-delay:0.2s}
+  .wave-bar:nth-child(4){height:20px;animation-delay:0.3s}
+  .wave-bar:nth-child(5){height:10px;animation-delay:0.4s}
+  @keyframes wave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(0.4)}}
+
+  .progress-bar{height:4px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--green),#5DCAA5);border-radius:2px;transition:width 0.5s ease}
+
+  .map-placeholder{background:linear-gradient(135deg,#E1F5EE,#9FE1CB20);border:1px solid var(--green-mid);border-radius:16px;padding:28px;text-align:center;margin-bottom:14px}
+  .map-icon{font-size:40px;margin-bottom:8px}
+  .map-title{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:4px}
+  .map-sub{font-size:12px;color:var(--text-muted)}
+
+  .doctor-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px}
+  .doc-avatar{width:44px;height:44px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .doc-name{font-size:14px;font-weight:500;margin-bottom:2px}
+  .doc-spec{font-size:12px;color:var(--text-muted)}
+  .doc-dist{font-size:12px;color:var(--green);font-weight:500;margin-top:4px}
+  .doc-action{margin-left:auto;background:var(--green-light);border:1px solid var(--green-mid);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:500;color:var(--teal);cursor:pointer;white-space:nowrap}
+
+  .lifestyle-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .lifestyle-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s}
+  .lifestyle-card:hover{border-color:var(--green);transform:translateY(-2px)}
+  .lifestyle-card .icon{font-size:28px;margin-bottom:8px}
+  .lifestyle-card .name{font-size:12px;font-weight:500;margin-bottom:2px}
+  .lifestyle-card .dur{font-size:11px;color:var(--text-muted)}
+
+  .nav{display:flex;background:var(--card);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:10}
+  .nav-item{flex:1;padding:12px 8px;text-align:center;cursor:pointer;transition:color 0.2s}
+  .nav-item .nav-icon{font-size:20px;margin-bottom:2px}
+  .nav-item .nav-label{font-size:10px;color:var(--text-muted)}
+  .nav-item.active .nav-label{color:var(--green)}
+  .nav-item.active .nav-icon{filter:hue-rotate(0deg)}
+
+  .page{display:none}
+  .page.active{display:block}
+
+  .symptom-result{background:linear-gradient(135deg,#04342C 0%,#0F6E56 100%);border-radius:20px;padding:24px;margin-bottom:20px;color:#fff}
+  .sr-label{font-size:11px;letter-spacing:2px;color:#9FE1CB;text-transform:uppercase;margin-bottom:8px}
+  .sr-title{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:4px}
+  .sr-sub{font-size:13px;color:#5DCAA5}
+
+  .tabs{display:flex;gap:0;background:var(--green-light);border-radius:12px;padding:4px;margin-bottom:20px}
+  .tab{flex:1;padding:8px;text-align:center;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text-muted);transition:all 0.2s}
+  .tab.active{background:#fff;color:var(--teal);box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+
+  .hidden{display:none}
+  .fade-in{animation:fadeIn 0.4s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-label">Your Wellness Companion</div>
+    <div class="hero-title">Feel better,<br>naturally.</div>
+    <div class="hero-sub">Home remedies · Guided recipes · Doctor finder</div>
+    <div class="search-box">
+      <svg class="search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="symptom-input" placeholder="Type a symptom or condition..." />
+    </div>
+    <div class="quick-tags">
+      <span class="tag" onclick="selectSymptom('Cold & Fever')">Cold & Fever</span>
+      <span class="tag" onclick="selectSymptom('Headache')">Headache</span>
+      <span class="tag" onclick="selectSymptom('Diabetes')">Diabetes</span>
+      <span class="tag" onclick="selectSymptom('Hypertension')">Hypertension</span>
+      <span class="tag" onclick="selectSymptom('Cough')">Cough</span>
+      <span class="tag" onclick="selectSymptom('Tiredness')">Tiredness</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Choose your symptoms</div>
+    <div class="section-sub">Select all that apply for personalised recommendations</div>
+    <div class="symptom-grid">
+      <div class="symptom-chip" onclick="toggleChip(this,'Cold & Fever')"><div class="icon">🤧</div><div class="label">Cold & Fever</div></div>
+      <div class="symptom-chip" onclick="toggleChip(this,'Headache')"><div class="icon">🤕</div><div class="label">Headache</div></div>
+      <div class="symptom-chip" onclick="toggleChip(this,'Cough')"><div class="icon">😮‍💨</div><div class="label">Cough</div></div>
+      <div class="symptom-chip" onclick="toggleChip(this,'Tiredness')"><div class="icon">😴</div><div class="label">Tiredness</div></div>
+      <div class="symptom-chip" onclick="toggleChip(this,'Diabetes')"><div class="icon">🩸</div><div class="label">Diabetes</div></div>
+      <div class="symptom-chip" onclick="toggleChip(this,'Hypertension')"><div class="icon">❤️</div><div class="label">Hypertension</div></div>
+      <div class="symptom-chip" onclick="toggleChip(this,'Stomach Ache')"><div class="icon">🤢</div><div class="label">Stomach Ache</div></div>
+      <div class="symptom-chip" onclick="toggleChip(this,'Anxiety')"><div class="icon">😰</div><div class="label">Anxiety</div></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;padding:14px" onclick="goToResults()">
+      <span>Get my personalised plan</span>
+      <span>→</span>
+    </button>
+  </div>
+</div>
+
+<div id="page-results" class="page">
+  <div style="padding:20px 20px 8px;display:flex;align-items:center;gap:12px">
+    <button onclick="showPage('home')" style="background:var(--green-light);border:1px solid var(--green-mid);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--teal);cursor:pointer">← Back</button>
+    <span style="font-size:15px;font-weight:500" id="results-heading">Your plan</span>
+  </div>
+
+  <div style="padding:0 20px">
+    <div class="symptom-result">
+      <div class="sr-label">Analysing your symptoms</div>
+      <div class="sr-title" id="result-condition">Cold & Fever</div>
+      <div class="sr-sub">3 home remedies · 2 recipes · lifestyle plan ready</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('remedies',this)">Remedies</div>
+      <div class="tab" onclick="switchTab('recipe',this)">Cook Guide</div>
+      <div class="tab" onclick="switchTab('lifestyle',this)">Lifestyle</div>
+    </div>
+
+    <div id="tab-remedies" class="fade-in">
+      <div class="result-card">
+        <div class="card-header">
+          <div class="card-icon green">🍯</div>
+          <div><div class="card-title">Honey-Ginger-Lemon Decoction</div><div class="card-meta">Home remedy · Takes 5 mins</div></div>
+        </div>
+        <div class="card-body">
+          <div class="card-desc">A powerful combination that soothes throat inflammation, reduces fever, and boosts immunity. Used in Ayurveda for over 3,000 years.</div>
+          <div class="pill-row"><span class="pill">Antiviral</span><span class="pill">Immunity boost</span><span class="pill">Fever reducer</span></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="showPage('cook')">🎙 Start guided cook</button>
+            <button class="btn btn-ghost">Save remedy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="card-header">
+          <div class="card-icon amber">🌿</div>
+          <div><div class="card-title">Tulsi Kadha</div><div class="card-meta">Home remedy · Takes 10 mins</div></div>
+        </div>
+        <div class="card-body">
+          <div class="card-desc">Holy basil tea with black pepper and cardamom. Traditional Indian remedy for respiratory infections and cough.</div>
+          <div class="pill-row"><span class="pill amber">Respiratory</span><span class="pill amber">Anti-bacterial</span></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" onclick="showPage('cook')">🎙 Start guided cook</button>
+            <button class="btn btn-ghost">Save remedy</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="card-header">
+          <div class="card-icon coral">🧄</div>
+          <div><div class="card-title">Garlic Steam Inhalation</div><div class="card-meta">Home remedy · Takes 15 mins</div></div>
+        </div>
+        <div class="card-body">
+          <div class="card-desc">Crushed garlic in hot water creates allicin-rich steam that clears blocked nasal passages and kills bacteria.</div>
+          <div class="pill-row"><span class="pill coral">Decongestant</span><span class="pill coral">No cooking needed</span></div>
+          <div class="btn-row">
+            <button class="btn btn-amber">View instructions</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-recipe" class="hidden fade-in">
+      <div class="result-card" style="padding:20px">
+        <div style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:4px">Honey-Ginger-Lemon Decoction</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">5 ingredients · 5 minutes · Serves 1</div>
+        <div style="font-size:13px;font-weight:500;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Ingredients</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+          <div style="font-size:13px;padding:8px 12px;background:var(--green-light);border-radius:10px">🍯 Honey — 2 tsp</div>
+          <div style="font-size:13px;padding:8px 12px;background:var(--green-light);border-radius:10px">🫚 Fresh ginger — 1 inch</div>
+          <div style="font-size:13px;padding:8px 12px;background:var(--green-light);border-radius:10px">🍋 Lemon — ½ piece</div>
+          <div style="font-size:13px;padding:8px 12px;background:var(--green-light);border-radius:10px">🌶 Black pepper — 3 corns</div>
+          <div style="font-size:13px;padding:8px 12px;background:var(--green-light);border-radius:10px">💧 Water — 1 cup</div>
+        </div>
+      </div>
+      <div class="voice-bar" id="voice-bar" onclick="toggleVoice()">
+        <button class="voice-btn" id="voice-btn">▶</button>
+        <div class="voice-info">
+          <div class="voice-title" id="voice-title">Voice Guide Ready</div>
+          <div class="voice-sub" id="voice-sub">Tap to start step-by-step cooking guide</div>
+        </div>
+        <div class="wave" id="wave-anim" style="display:none">
+          <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+        </div>
+      </div>
+      <div class="progress-bar" id="prog-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+
+      <div style="padding:16px 0">
+        <div id="steps-container">
+          <div class="step" id="step-0"><div class="step-num">1</div><div class="step-text"><strong>Boil water</strong> — Pour 1 cup of water into a saucepan and bring it to a rolling boil on medium-high heat.</div></div>
+          <div class="step" id="step-1"><div class="step-num">2</div><div class="step-text"><strong>Add ginger</strong> — Peel and crush a 1-inch piece of fresh ginger. Drop it into the boiling water.</div></div>
+          <div class="step" id="step-2"><div class="step-num">3</div><div class="step-text"><strong>Add pepper</strong> — Lightly crush 3 black peppercorns and add to the pot. Simmer on low for 3 minutes.</div></div>
+          <div class="step" id="step-3"><div class="step-num">4</div><div class="step-text"><strong>Cool & add honey</strong> — Remove from heat. Let cool for 2 minutes so honey nutrients are preserved. Stir in 2 tsp honey.</div></div>
+          <div class="step" id="step-4"><div class="step-num">5</div><div class="step-text"><strong>Squeeze lemon</strong> — Add juice of ½ a lemon. Stir well and pour into a cup. Drink warm.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-lifestyle" class="hidden fade-in">
+      <div style="font-size:14px;font-weight:500;margin-bottom:12px">Recommended activities for recovery</div>
+      <div class="lifestyle-grid">
+        <div class="lifestyle-card"><div class="icon">🚶</div><div class="name">Walking</div><div class="dur">20 mins · Morning</div></div>
+        <div class="lifestyle-card"><div class="icon">🧘</div><div class="name">Yoga Nidra</div><div class="dur">30 mins · Evening</div></div>
+        <div class="lifestyle-card"><div class="icon">🎵</div><div class="name">Music therapy</div><div class="dur">Any time</div></div>
+        <div class="lifestyle-card"><div class="icon">💬</div><div class="name">Social time</div><div class="dur">Call a friend</div></div>
+        <div class="lifestyle-card"><div class="icon">😴</div><div class="name">Rest</div><div class="dur">8–9 hrs sleep</div></div>
+        <div class="lifestyle-card"><div class="icon">🌬</div><div class="name">Breathing</div><div class="dur">Pranayama · 10 mins</div></div>
+      </div>
+
+      <div style="margin-top:24px;margin-bottom:12px;font-size:14px;font-weight:500">If remedies don't help in 48 hours</div>
+      <div class="map-placeholder">
+        <div class="map-icon">🗺</div>
+        <div class="map-title">Doctors & Yoga Centers Near You</div>
+        <div class="map-sub">Showing results within 10 km of your location</div>
+        <button class="btn btn-primary" style="margin:14px auto 0;display:flex" onclick="showPage('map')">Find nearby help →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-cook" class="page">
+  <div style="background:linear-gradient(135deg,#04342C,#0F6E56);padding:24px 20px 28px">
+    <button onclick="showPage('results')" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:10px;padding:8px 14px;font-size:13px;color:#fff;cursor:pointer;margin-bottom:16px">← Back to remedies</button>
+    <div style="font-size:11px;letter-spacing:2px;color:#9FE1CB;text-transform:uppercase;margin-bottom:6px">Guided cooking</div>
+    <div style="font-family:'Playfair Display',serif;font-size:24px;color:#fff">Honey-Ginger-Lemon</div>
+    <div style="font-size:13px;color:#5DCAA5;margin-top:4px">Step-by-step voice navigation</div>
+    <div style="background:rgba(255,255,255,0.1);border-radius:14px;padding:16px;margin-top:20px;display:flex;align-items:center;gap:14px" id="cook-voice" onclick="toggleCook()">
+      <div style="width:48px;height:48px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;flex-shrink:0" id="cook-voice-btn">▶</div>
+      <div>
+        <div style="font-size:14px;font-weight:500;color:#E1F5EE" id="cook-step-title">Tap to start</div>
+        <div style="font-size:12px;color:#9FE1CB" id="cook-step-sub">Like GPS, I'll guide you through each step</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:500">Steps</div>
+      <div style="font-size:13px;color:var(--text-muted)" id="cook-step-counter">Step 0 of 5</div>
+    </div>
+    <div id="cook-steps">
+      <div class="step" id="cs-0"><div class="step-num">1</div><div class="step-text">Boil 1 cup of water in a saucepan on medium-high heat until you see rolling bubbles.</div></div>
+      <div class="step" id="cs-1"><div class="step-num">2</div><div class="step-text">Peel and crush 1 inch of fresh ginger using the flat of your knife. Add it to the boiling water.</div></div>
+      <div class="step" id="cs-2"><div class="step-num">3</div><div class="step-text">Crush 3 black peppercorns and add to the pot. Reduce flame to low. Let it simmer for 3 minutes.</div></div>
+      <div class="step" id="cs-3"><div class="step-num">4</div><div class="step-text">Turn off the heat. Wait 2 minutes. Then stir in 2 tsp of raw honey — never add honey to boiling liquid.</div></div>
+      <div class="step" id="cs-4"><div class="step-num">5</div><div class="step-text">Squeeze in juice from half a lemon. Stir gently. Pour into a cup and sip slowly while warm. You're done!</div></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn btn-ghost" style="flex:1;justify-content:center" id="prev-btn" onclick="prevCookStep()">← Previous</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center" id="next-btn" onclick="nextCookStep()">Next step →</button>
+    </div>
+  </div>
+</div>
+
+<div id="page-map" class="page">
+  <div style="padding:20px 20px 8px;display:flex;align-items:center;gap:12px">
+    <button onclick="showPage('results')" style="background:var(--green-light);border:1px solid var(--green-mid);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--teal);cursor:pointer">← Back</button>
+    <span style="font-size:15px;font-weight:500">Nearby help</span>
+  </div>
+  <div style="padding:0 20px">
+    <div style="background:var(--green-light);border:1px dashed var(--green-mid);border-radius:16px;height:160px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;flex-direction:column;gap:8px">
+      <div style="font-size:32px">📍</div>
+      <div style="font-size:13px;color:var(--teal);font-weight:500">Map view (10 km radius)</div>
+      <div style="font-size:11px;color:var(--text-muted)">Google Maps integration placeholder</div>
+    </div>
+
+    <div style="font-size:14px;font-weight:500;margin-bottom:12px">Doctors nearby</div>
+    <div class="doctor-card"><div class="doc-avatar">👨‍⚕️</div><div><div class="doc-name">Dr. Ramesh Nair</div><div class="doc-spec">General Physician</div><div class="doc-dist">1.2 km away · Open now</div></div><div class="doc-action">Book</div></div>
+    <div class="doctor-card"><div class="doc-avatar">👩‍⚕️</div><div><div class="doc-name">Dr. Priya Sharma</div><div class="doc-spec">Ayurvedic Specialist</div><div class="doc-dist">2.7 km away · Open now</div></div><div class="doc-action">Book</div></div>
+    <div class="doctor-card"><div class="doc-avatar">👨‍⚕️</div><div><div class="doc-name">Dr. Arvind Patel</div><div class="doc-spec">ENT Specialist</div><div class="doc-dist">4.1 km away · Closes 7pm</div></div><div class="doc-action">Book</div></div>
+
+    <div style="font-size:14px;font-weight:500;margin:20px 0 12px">Yoga centers nearby</div>
+    <div class="doctor-card"><div class="doc-avatar">🧘</div><div><div class="doc-name">Isha Yoga Centre</div><div class="doc-spec">Hatha & Kundalini Yoga</div><div class="doc-dist">3.2 km · Morning batches available</div></div><div class="doc-action">Visit</div></div>
+    <div class="doctor-card"><div class="doc-avatar">🌿</div><div><div class="doc-name">Prakriti Wellness</div><div class="doc-spec">Meditation & Yoga</div><div class="doc-dist">6.5 km · Free trial class</div></div><div class="doc-action">Visit</div></div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-item active" id="nav-home" onclick="showPage('home');setNav('home')">
+    <div class="nav-icon">🏠</div><div class="nav-label">Home</div>
+  </div>
+  <div class="nav-item" id="nav-results" onclick="showPage('results');setNav('results')">
+    <div class="nav-icon">💊</div><div class="nav-label">Remedies</div>
+  </div>
+  <div class="nav-item" id="nav-cook" onclick="showPage('cook');setNav('cook')">
+    <div class="nav-icon">🍳</div><div class="nav-label">Cook Guide</div>
+  </div>
+  <div class="nav-item" id="nav-map" onclick="showPage('map');setNav('map')">
+    <div class="nav-icon">📍</div><div class="nav-label">Find Help</div>
+  </div>
+</div>
+
+<script>
+let selectedSymptoms=[];
+let cookStep=-1;
+let voiceActive=false;
+let recipeStep=-1;
+
+const cookStepData=[
+  {title:"Boil the water",sub:"Step 1 of 5 — heat your saucepan"},
+  {title:"Add fresh ginger",sub:"Step 2 of 5 — crush and drop in"},
+  {title:"Add black pepper",sub:"Step 3 of 5 — simmer on low for 3 mins"},
+  {title:"Cool then add honey",sub:"Step 4 of 5 — wait before adding honey"},
+  {title:"Squeeze lemon & serve",sub:"Step 5 of 5 — your remedy is ready!"}
+];
+
+function showPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function setNav(p){
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  const n=document.getElementById('nav-'+p);
+  if(n) n.classList.add('active');
+}
+
+function toggleChip(el,sym){
+  el.classList.toggle('sel');
+  if(selectedSymptoms.includes(sym)) selectedSymptoms=selectedSymptoms.filter(s=>s!==sym);
+  else selectedSymptoms.push(sym);
+}
+
+function selectSymptom(sym){
+  document.getElementById('symptom-input').value=sym;
+  goToResults(sym);
+}
+
+function goToResults(sym){
+  const cond=sym||(selectedSymptoms.length?selectedSymptoms.join(' + '):'Cold & Fever');
+  document.getElementById('result-condition').textContent=cond;
+  showPage('results');
+  setNav('results');
+}
+
+function switchTab(id,el){
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['remedies','recipe','lifestyle'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);
+    el.classList.toggle('hidden',t!==id);
+    if(t===id) el.classList.add('fade-in');
+  });
+}
+
+function toggleVoice(){
+  voiceActive=!voiceActive;
+  document.getElementById('voice-btn').textContent=voiceActive?'⏸':'▶';
+  document.getElementById('wave-anim').style.display=voiceActive?'flex':'none';
+  if(voiceActive){
+    recipeStep=0;
+    updateRecipeHighlight();
+  }
+}
+
+function updateRecipeHighlight(){
+  for(let i=0;i<5;i++){
+    const s=document.getElementById('step-'+i);
+    s.classList.toggle('step-active',i===recipeStep);
+  }
+  const pct=(recipeStep+1)/5*100;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  const titles=['Boiling water...','Adding ginger...','Simmering with pepper...','Adding honey...','Finishing with lemon!'];
+  const subs=['Make sure you see rolling bubbles','Crush it first for max flavour','Keep flame on low','Never add to boiling liquid','Almost done — your remedy awaits'];
+  if(recipeStep>=0){
+    document.getElementById('voice-title').textContent=titles[recipeStep]||'Done!';
+    document.getElementById('voice-sub').textContent=subs[recipeStep]||'Your remedy is ready!';
+  }
+}
+
+let cookActive=false;
+function toggleCook(){
+  cookActive=!cookActive;
+  document.getElementById('cook-voice-btn').textContent=cookActive?'⏸':'▶';
+  if(cookActive && cookStep<0) nextCookStep();
+}
+
+function nextCookStep(){
+  cookStep=Math.min(cookStep+1,4);
+  updateCookStep();
+  if(!cookActive){cookActive=true;document.getElementById('cook-voice-btn').textContent='⏸';}
+}
+
+function prevCookStep(){
+  cookStep=Math.max(cookStep-1,0);
+  updateCookStep();
+}
+
+function updateCookStep(){
+  for(let i=0;i<5;i++){
+    const s=document.getElementById('cs-'+i);
+    s.classList.toggle('step-active',i===cookStep);
+  }
+  document.getElementById('cook-step-counter').textContent='Step '+(cookStep+1)+' of 5';
+  const d=cookStepData[cookStep];
+  document.getElementById('cook-step-title').textContent=d.title;
+  document.getElementById('cook-step-sub').textContent=d.sub;
+  document.getElementById('prev-btn').style.opacity=cookStep>0?'1':'0.4';
+  document.getElementById('next-btn').textContent=cookStep<4?'Next step →':'Done!';
+}
+</script>
+</body>
+</html>
